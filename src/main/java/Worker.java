@@ -46,14 +46,16 @@ public class Worker extends Thread {
     public String write(Task task) throws IOException, InterruptedException {
         Thread.sleep(task.getCusto());
         lock.writeLock().lock();
+        Integer newValue = null;
         try (RandomAccessFile raf = new RandomAccessFile(sharedFile, "rw")) {
+            newValue = Integer.valueOf(raf.readLine()) + task.getValue();
             raf.seek(0);
-            raf.writeBytes(task.getValue() + System.lineSeparator());
-            System.out.println("W - Task " + this.getId() + " : " + task.getValue());
+            raf.writeBytes((newValue) + System.lineSeparator());
+            System.out.println("W - Task " + this.getId() + " : " + newValue);
         } finally {
             lock.writeLock().unlock();
         }
-        return String.valueOf(task.getValue());
+        return String.valueOf(newValue);
     }
 
     public String read(Task task) throws IOException, InterruptedException {
