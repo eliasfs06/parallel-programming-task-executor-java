@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -6,12 +7,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Executor {
     Deque<Task> taskQueue = new ArrayDeque<>();
-    List<Result> results = new ArrayList<>();
+    CopyOnWriteArrayList<Result> results = new CopyOnWriteArrayList<>();
     private AtomicInteger resultId = new AtomicInteger(0);
 
     public Executor() {}
 
-    public Executor(Deque<Task> taskQueue, List<Result> results) {
+    public Executor(Deque<Task> taskQueue, CopyOnWriteArrayList<Result> results) {
         this.taskQueue = taskQueue;
         this.results = results;
     }
@@ -23,17 +24,14 @@ public class Executor {
     public List<Task> getNTasks(int nTasks){
         List<Task> tasks = new ArrayList<>();
         for(int i = 0; i < nTasks; i++){
-            Task task = taskQueue.getLast();
-            taskQueue.remove(task);
+            Task task = taskQueue.removeFirst();
             tasks.add(task);
         }
         return tasks;
     }
 
     public Task getTask(){
-        Task task = taskQueue.getLast();
-        taskQueue.remove(task);
-        return task;
+        return taskQueue.removeFirst();
     }
 
     public void shuffleTaskQueue() {
@@ -55,11 +53,11 @@ public class Executor {
         this.taskQueue = taskQueue;
     }
 
-    public List<Result> getResults() {
+    public CopyOnWriteArrayList<Result> getResults() {
         return results;
     }
 
-    public void setResults(List<Result> results) {
+    public void setResults(CopyOnWriteArrayList<Result> results) {
         this.results = results;
     }
 

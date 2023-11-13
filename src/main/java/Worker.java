@@ -28,6 +28,7 @@ public class Worker extends Thread {
             long startTime = System.nanoTime();
             String value = null;
             try {
+                Thread.sleep(task.getCusto());
                 if (task.getTaskType() == TaskType.WRITING) value = write(task);
                 else value = read(task);
             } catch (IOException | InterruptedException e){
@@ -39,12 +40,11 @@ public class Worker extends Thread {
         }
     }
 
-    synchronized public void setResult(long executionTime, String value){
+    public void setResult(long executionTime, String value){
         executor.addResult(executionTime, value);
     }
 
-    public String write(Task task) throws IOException, InterruptedException {
-        Thread.sleep(task.getCusto());
+    public String write(Task task) throws IOException {
         lock.writeLock().lock();
         Integer newValue = null;
         try (RandomAccessFile raf = new RandomAccessFile(sharedFile, "rw")) {
@@ -58,8 +58,7 @@ public class Worker extends Thread {
         return String.valueOf(newValue);
     }
 
-    public String read(Task task) throws IOException, InterruptedException {
-        Thread.sleep(task.getCusto());
+    public String read(Task task) throws IOException {
         lock.readLock().lock();
         String value;
         try (RandomAccessFile raf = new RandomAccessFile(sharedFile, "r")) {
