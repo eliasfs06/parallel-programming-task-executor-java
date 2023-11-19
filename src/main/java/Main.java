@@ -10,35 +10,44 @@ public class Main {
     protected static String FILE_PATH = "./shared-file.txt";
 
     public static void main(String[] args) {
-
         Scanner scanner = new Scanner(System.in);
-
-        System.out.print("Digite o valor de N: ");
-        int nTasksAmount = scanner.nextInt();
-
-        System.out.print("Digite o valor de T: ");
-        int tWorkersThreads = scanner.nextInt();
-
-        System.out.print("Digite o valor de E: ");
-        int eWrittingTasks = scanner.nextInt();
+        int nTasksAmount = getInput(scanner, "Digite o valor de N: ");
+        int tWorkersThreads = getInput(scanner, "Digite o valor de T: ");
+        int eWrittingTasks = getInput(scanner, "Digite o valor de E: ");
 
         Executor executor = new Executor();
-
         double tasksAmount = Math.pow(10, nTasksAmount);
+        createTasks(executor, tasksAmount, eWrittingTasks);
+
+        File sharedFile = createSharedFile();
+        List<Worker> workers = initializeWorkers(executor, tasksAmount, tWorkersThreads, sharedFile);
+
+        long executionTime = executeWorkers(workers);
+        System.out.print("Fim do processamento.");
+
+        createResultFile(nTasksAmount, tWorkersThreads, eWrittingTasks, executionTime, executor);
+    }
+
+    private static int getInput(Scanner scanner, String message) {
+        System.out.print(message);
+        return scanner.nextInt();
+    }
+
+    private static void createTasks(Executor executor, double tasksAmount, int eWrittingTasks) {
         double writingTasks = ((double) eWrittingTasks / 100) * tasksAmount;
         double readingTasks = tasksAmount - writingTasks;
         int taskId = 0;
 
-        //Creates tasks queue
-        for(int i = 0; i < writingTasks; i++) {
-            executor.addTaskToQueue(new Task(++taskId, (int) (Math.random() * 0.01), TaskType.WRITING, (int) (Math.random() * 10)));
+        for (int i = 0; i < (int) writingTasks; i++) {
+            executor.addTaskToQueue(new Task(++taskId, (Math.random() * 0.01), TaskType.WRITING, (int) (Math.random() * 10)));
         }
-        for(int i = 0; i < readingTasks; i++) {
-            executor.addTaskToQueue(new Task(++taskId, (int) (Math.random() * 0.01), TaskType.READING, (int) (Math.random() * 10)));
+        for (int i = 0; i < (int) readingTasks; i++) {
+            executor.addTaskToQueue(new Task(++taskId, (Math.random() * 0.01), TaskType.READING, (int) (Math.random() * 10)));
         }
         executor.shuffleTaskQueue();
+    }
 
-        //Creates shared fil
+    private static File createSharedFile() {
         File sharedFile = new File(FILE_PATH);
         try {
             sharedFile.createNewFile();
@@ -48,18 +57,23 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return sharedFile;
+    }
 
-        //Number of tasks per worker0
+    private static List<Worker> initializeWorkers(Executor executor, double tasksAmount, int tWorkersThreads, File sharedFile) {
         int nTasksPerWorkers = (int) tasksAmount / tWorkersThreads;
         int restTasks = (int) (tasksAmount - (nTasksPerWorkers * tWorkersThreads));
 
-        //Initializes workers
         List<Worker> workers = new ArrayList<>();
-        for(int i = 0; i < tWorkersThreads; i++){
+        for (int i = 0; i < tWorkersThreads; i++) {
             Worker worker = new Worker(executor.getNTasks(nTasksPerWorkers), sharedFile, executor);
             workers.add(worker);
         }
-        //Distributes tasks left over in the division
+        distributeRemainingTasks(executor, restTasks, workers);
+        return workers;
+    }
+
+    private static void distributeRemainingTasks(Executor executor, int restTasks, List<Worker> workers) {
         while (restTasks > 0) {
             for (Worker worker : workers) {
                 if (!executor.getTaskQueue().isEmpty()) {
@@ -68,13 +82,11 @@ public class Main {
                 }
             }
         }
+    }
 
-        //Workers working
+    private static long executeWorkers(List<Worker> workers) {
         long startTime = System.nanoTime();
         workers.forEach(Thread::start);
-        long endTime = System.nanoTime();
-        long executionTime = endTime - startTime;
-
         for (Worker worker : workers) {
             try {
                 worker.join();
@@ -82,23 +94,21 @@ public class Main {
                 e.printStackTrace();
             }
         }
+        long endTime = System.nanoTime();
+        long executionTime = endTime - startTime;
+        return executionTime;
+    }
 
-        System.out.print("Fim do processamento.");
-
-        //Creates result file
-        File result = new File("src/main/result/N"+nTasksAmount+"T"+tWorkersThreads+"E"+eWrittingTasks);
+    private static void createResultFile(int nTasksAmount, int tWorkersThreads, int eWrittingTasks, long executionTime, Executor executor) {
+        File result = new File("src/main/result/N" + nTasksAmount + "T" + tWorkersThreads + "E" + eWrittingTasks);
         try {
             result.createNewFile();
             PrintWriter printWriterResult = new PrintWriter(new FileWriter(result));
             printWriterResult.println("Resultados");
             printWriterResult.println("Tempo total de processamento: " + executionTime + " nanosegundos");
-            for(Result res : executor.getResults()){
-                printWriterResult.println("Resultado " + res.getId() + ": value = " + res.getResult() + ", tempo de execução = " + res.getTime() + " nanosegundos");
-            }
             printWriterResult.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 }

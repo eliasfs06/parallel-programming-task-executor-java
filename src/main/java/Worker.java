@@ -1,20 +1,14 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/**
- * Class that represents a worker. Workers must execute a task.
- */
 public class Worker extends Thread {
-    private List<Task> tasks = new ArrayList<>();
+    private List<Task> tasks;
     private File sharedFile;
     private Executor executor;
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
-    public Worker() {}
 
     public Worker(List<Task> tasks, File sharedFile, Executor executor) {
         this.tasks = tasks;
@@ -23,76 +17,49 @@ public class Worker extends Thread {
     }
 
     @Override
-    public void run(){
-        for(Task task : tasks){
-            long startTime = System.nanoTime();
-            String value = null;
-            try {
-                Thread.sleep(task.getCusto());
-                if (task.getTaskType() == TaskType.WRITING) value = write(task);
-                else value = read(task);
-            } catch (IOException | InterruptedException e){
-                e.printStackTrace();
-            }
-            long endTime = System.nanoTime();
-            long executionTime = endTime - startTime;
-            this.setResult(executionTime, value);
+    public void run() {
+        for (Task task : tasks) {
+            executeTask(task);
         }
     }
 
-    public void setResult(long executionTime, String value){
-        executor.addResult(executionTime, value);
+    private void executeTask(Task task) {
+        try {
+            long startTime = System.nanoTime();
+            Thread.sleep((long) (task.getCusto() * 100));
+            String value = task.getTaskType() == TaskType.WRITING ? write(task) : read(task);
+            long executionTime = System.nanoTime() - startTime;
+            executor.addResult(executionTime, value);
+            System.out.println("Thread " + Thread.currentThread().getId() + " executed task " + task.getId() + " in " + executionTime + " nanoseconds");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public String write(Task task) throws IOException {
+    private String write(Task task) throws IOException {
         lock.writeLock().lock();
-        Integer newValue = null;
         try (RandomAccessFile raf = new RandomAccessFile(sharedFile, "rw")) {
-            newValue = Integer.valueOf(raf.readLine()) + task.getValue();
+            int newValue = Integer.parseInt(raf.readLine()) + task.getValue();
             raf.seek(0);
-            raf.writeBytes((newValue) + System.lineSeparator());
-            System.out.println("W - Task " + this.getId() + " : " + newValue);
+            raf.writeBytes(newValue + System.lineSeparator());
+            return String.valueOf(newValue);
         } finally {
             lock.writeLock().unlock();
         }
-        return String.valueOf(newValue);
     }
 
-    public String read(Task task) throws IOException {
+    private String read(Task task) throws IOException {
         lock.readLock().lock();
-        String value;
         try (RandomAccessFile raf = new RandomAccessFile(sharedFile, "r")) {
-            value = raf.readLine();
-            System.out.println("R - Task " + this.getId() + " : " + value);
+            return raf.readLine();
         } finally {
             lock.readLock().unlock();
         }
-        return value;
     }
-
 
     public List<Task> getTasks() {
         return tasks;
     }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
-    }
-
-    public File getSharedFile() {
-        return sharedFile;
-    }
-
-    public void setSharedFile(File sharedFile) {
-        this.sharedFile = sharedFile;
-    }
-
-    public Executor getExecutor() {
-        return executor;
-    }
-
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
-
 }

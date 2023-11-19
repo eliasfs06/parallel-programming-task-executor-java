@@ -3,13 +3,13 @@
  */
 public class Task {
     private Integer id = 0;
-    private Integer custo;
+    private double custo;
     private TaskType taskType;
     private Integer value;
 
     public Task() {}
 
-    public Task(Integer id, Integer custo, TaskType taskType, Integer value) {
+    public Task(Integer id, double custo, TaskType taskType, Integer value) {
         this.id = id;
         this.custo = custo;
         this.taskType = taskType;
@@ -24,11 +24,11 @@ public class Task {
         this.id = id;
     }
 
-    public Integer getCusto() {
+    public double getCusto() {
         return custo;
     }
 
-    public void setCusto(Integer custo) {
+    public void setCusto(double custo) {
         this.custo = custo;
     }
 
