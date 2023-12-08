@@ -15,8 +15,8 @@ public class Main {
         int tWorkersThreads = getInput(scanner, "Digite o valor de T: ");
         int eWrittingTasks = getInput(scanner, "Digite o valor de E: ");
 
-        Executor executor = new Executor();
         double tasksAmount = Math.pow(10, nTasksAmount);
+        Executor executor = new Executor((int) tasksAmount);
         createTasks(executor, tasksAmount, eWrittingTasks);
 
         File sharedFile = createSharedFile();
@@ -76,7 +76,7 @@ public class Main {
     private static void distributeRemainingTasks(Executor executor, int restTasks, List<Worker> workers) {
         while (restTasks > 0) {
             for (Worker worker : workers) {
-                if (!executor.getTaskQueue().isEmpty()) {
+                if (!(executor.getTaskQueue().length == 0)) {
                     worker.getTasks().add(executor.getTask());
                     restTasks--;
                 }
