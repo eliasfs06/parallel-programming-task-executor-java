@@ -76,6 +76,7 @@ public class Main {
     private static void distributeRemainingTasks(Executor executor, int restTasks, List<Worker> workers) {
         while (restTasks > 0) {
             for (Worker worker : workers) {
+                if(restTasks == 0) break;
                 if (!(executor.getTaskQueue().length == 0)) {
                     worker.getTasks().add(executor.getTask());
                     restTasks--;
