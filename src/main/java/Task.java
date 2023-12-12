@@ -3,16 +3,17 @@
  */
 public class Task {
     private Integer id = 0;
-    private double custo;
-    private TaskType taskType;
-    private Integer value;
+    private float custo;
+    private boolean write;
+    private byte value;
 
-    public Task() {}
+    public Task() {
+    }
 
-    public Task(Integer id, double custo, TaskType taskType, Integer value) {
+    public Task(Integer id, float custo, boolean write, byte value) {
         this.id = id;
         this.custo = custo;
-        this.taskType = taskType;
+        this.write = write;
         this.value = value;
     }
 
@@ -24,27 +25,27 @@ public class Task {
         this.id = id;
     }
 
-    public double getCusto() {
+    public float getCusto() {
         return custo;
     }
 
-    public void setCusto(double custo) {
+    public void setCusto(float custo) {
         this.custo = custo;
     }
 
-    public TaskType getTaskType() {
-        return taskType;
+    public boolean getWrite() {
+        return write;
     }
 
-    public void setTaskType(TaskType taskType) {
-        this.taskType = taskType;
+    public void setWrite(boolean write) {
+        this.write = write;
     }
 
-    public Integer getValue() {
+    public byte getValue() {
         return value;
     }
 
-    public void setValue(Integer value) {
+    public void setValue(byte value) {
         this.value = value;
     }
 }

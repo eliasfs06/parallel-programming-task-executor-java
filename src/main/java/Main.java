@@ -39,10 +39,10 @@ public class Main {
         int taskId = 0;
 
         for (int i = 0; i < (int) writingTasks; i++) {
-            executor.addTaskToQueue(new Task(++taskId, (Math.random() * 0.01), TaskType.WRITING, (int) (Math.random() * 10)));
+            executor.addTaskToQueue(new Task(++taskId, (float) (Math.random() * 0.01), true, (byte) (Math.random() * 10)));
         }
         for (int i = 0; i < (int) readingTasks; i++) {
-            executor.addTaskToQueue(new Task(++taskId, (Math.random() * 0.01), TaskType.READING, (int) (Math.random() * 10)));
+            executor.addTaskToQueue(new Task(++taskId, (float) (Math.random() * 0.01), false, (byte) (Math.random() * 10)));
         }
         executor.shuffleTaskQueue();
     }

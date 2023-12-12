@@ -27,7 +27,7 @@ public class Worker extends Thread {
         try {
             long startTime = System.nanoTime();
             Thread.sleep((long) (task.getCusto() * 100));
-            String value = task.getTaskType() == TaskType.WRITING ? write(task) : read(task);
+            String value = task.getWrite() ? write(task) : read(task);
             long executionTime = System.nanoTime() - startTime;
             executor.addResult(executionTime, value);
             System.out.println("Thread " + Thread.currentThread().getId() + " executed task " + task.getId() + " in " + executionTime + " nanoseconds");
